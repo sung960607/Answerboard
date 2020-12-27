@@ -9,5 +9,6 @@
 <body>
 	<h1><a href="./answerboard.do">내용확인</a></h1>
 	<h1><a href="./login.do">로그인으로 가기</a></h1>
+	<h1>하이</h1>
 </body>
 </html>
