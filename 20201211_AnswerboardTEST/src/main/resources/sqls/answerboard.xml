@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.min.edu.dao.IAnswerboardDao">
+
+	<select id="selectAll" parameterType="java.util.Map" resultType="aDto">
+		SELECT
+		SEQ,ID,TITLE,CONTENT,REFER,STEP,DEPTH,READCOUNT,DELFLAG,REGDATE
+		FROM ANSWERBOARD
+		WHERE DELFLAG ='N'
+		<if test="seq!=null">
+		AND SEQ=#{seq}
+		</if>
+		ORDER BY REFER DESC, STEP
+	</select>
+
+	<select id="detailBoard" parameterType="java.lang.String"
+		resultType="aDto">
+		SELECT
+		SEQ,ID,TITLE,CONTENT,REFER,STEP,DEPTH,READCOUNT,DELFLAG,REGDATE
+		FROM
+		ANSWERBOARD
+		WHERE SEQ =#{seq}
+	</select>
+	
+	<insert id="writeBoard" parameterType="aDto">
+	INSERT INTO ANSWERBOARD(SEQ,ID,TITLE,CONTENT,
+	REFER,STEP,DEPTH,
+	READCOUNT,DELFLAG,REGDATE)
+	VALUES(ANSWERBOARD_SEQ.NEXTVAL,#{id},#{title},#{content},
+	(SELECT NVL(MAX(REFER),0)+1 FROM ANSWERBOARD a),0,0,
+	0,'N',SYSDATE)
+	</insert>
+	
+	
+	<update id="replyBoardUp" parameterType="aDto">
+		UPDATE ANSWERBOARD SET STEP = STEP +1
+		WHERE STEP > (SELECT STEP FROM ANSWERBOARD a WHERE SEQ = #{seq})
+		AND REFER = (SELECT REFER FROM ANSWERBOARD a2 WHERE SEQ=#{seq})
+	</update>
+
+	<insert id="replyBoardIn" parameterType="aDto">
+		INSERT INTO ANSWERBOARD (SEQ,ID,TITLE,CONTENT,
+		REFER,STEP,DEPTH,READCOUNT,DELFLAG,REGDATE)
+		VALUES(ANSWERBOARD_SEQ.NEXTVAL,#{id},#{title},#{content},
+		(SELECT REFER FROM ANSWERBOARD a WHERE SEQ=#{seq}),
+		(SELECT STEP FROM ANSWERBOARD a2 WHERE SEQ=#{seq})+1,
+		(SELECT DEPTH FROM ANSWERBOARD a3 WHERE SEQ=#{seq})+1,0,'N',SYSDATE)
+	</insert>
+	
+	<update id="modifyBoard" parameterType="aDto">
+		UPDATE ANSWERBOARD SET TITLE =#{title}, CONTENT =#{content}
+  		WHERE SEQ =#{seq}
+	</update>
+	
+	<update id="delflagBoard" parameterType="java.lang.String">
+	UPDATE ANSWERBOARD SET DELFLAG ='Y'
+ 	WHERE DELFLAG ='N'
+ 	AND SEQ=#{seq}
+	</update>
+	
+	<update id="multiDelete" parameterType="java.util.Map">
+	UPDATE ANSWERBOARD SET DELFLAG ='Y'
+	WHERE SEQ IN 
+	<foreach collection="seqs" item="seq" open="(" separator="," close=")">
+	#{seq}
+	</foreach>
+	</update>
+	
+</mapper>
